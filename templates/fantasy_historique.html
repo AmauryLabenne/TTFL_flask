@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Historique Fantasy</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    iframe {
+      width: 100%;
+      height: 80vh;
+      border: none;
+      border-radius: 14px;
+    }
+    .note { text-align:center; font-size:0.85rem; color:#6b7280; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>📊 Historique Fantasy</h1>
+      <p class="subtitle">Connectez-vous pour voir votre tableau</p>
+
+      <nav class="menu">
+        <a href="{{ url_for('index') }}" class="btn ghost round">Tableau</a>
+        <a href="{{ url_for('fantasy') }}" class="btn ghost round">Fantasy</a>
+        <a href="{{ url_for('fantasy_historique') }}" class="btn ghost round">Historique</a>
+      </nav>
+    </header>
+
+    <section class="card">
+      <iframe src="{{ historique_url }}"></iframe>
+      <p class="note">⚠️ Vous devez vous connecter dans l’iframe pour accéder aux données</p>
+    </section>
+
+    <section style="text-align:center; margin-top:12px;">
+      <a href="{{ url_for('index') }}" class="btn ghost round">Retour au tableau des joueurs</a>
+    </section>
+
+    <footer>
+      <small>Lecture seule • Mobile friendly</small>
+    </footer>
+  </div>
+</body>
+</html>

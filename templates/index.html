@@ -15,15 +15,21 @@
   <div class="app">
     <header>
       <h1>🏀 Stats Joueurs</h1>
-      <p class="subtitle">Recherche et tri — lecture seule</p>
+      <p class="subtitle">Lecture seule • Recherche et tri • Mobile friendly</p>
+
+      <nav class="menu">
+        <a href="{{ url_for('index') }}" class="btn ghost round">Tableau</a>
+        <a href="{{ url_for('fantasy') }}" class="btn ghost round">Fantasy</a>
+        <a href="{{ url_for('fantasy_historique') }}" class="btn ghost round">Historique</a>
+      </nav>
     </header>
 
     <!-- Recherche -->
     <section class="card">
       <form method="get" action="/">
-        <input type="text" name="search" value="{{ search }}" placeholder="🔍 Rechercher un joueur (ex : Alice)" class="search-input">
+        <input type="text" name="search" value="{{ search }}" placeholder="🔍 Rechercher un joueur" class="search-input">
         <button class="btn round" type="submit">Filtrer</button>
-        <a class="btn ghost round" href="/">Réinitialiser</a>
+        <a href="{{ url_for('index') }}" class="btn ghost round">Réinitialiser</a>
       </form>
     </section>
 
@@ -49,11 +55,11 @@
           </tbody>
         </table>
       </div>
-      <p class="caption">Tri et recherche en direct disponibles (barre en haut à droite du tableau).</p>
+      <p class="caption">Tri et recherche disponibles (DataTables, barre en haut à droite)</p>
     </section>
 
     <footer>
-      <small>Lecture seule • Version mobile</small>
+      <small>Lecture seule • Mobile friendly</small>
     </footer>
   </div>
 

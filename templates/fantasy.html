@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fantasy TrashTalk</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>⚡ Fantasy TrashTalk</h1>
+      <p class="subtitle">Cliquez sur le bouton pour vous connecter</p>
+
+      <nav class="menu">
+        <a href="{{ url_for('index') }}" class="btn ghost round">Tableau</a>
+        <a href="{{ url_for('fantasy') }}" class="btn ghost round">Fantasy</a>
+        <a href="{{ url_for('fantasy_historique') }}" class="btn ghost round">Historique</a>
+      </nav>
+    </header>
+
+    <section class="card" style="text-align:center;">
+      <a href="{{ fantasy_url }}" target="_blank" class="btn round">Aller sur Fantasy</a>
+    </section>
+
+    <section style="text-align:center; margin-top:12px;">
+      <a href="{{ url_for('index') }}" class="btn ghost round">Retour au tableau des joueurs</a>
+    </section>
+
+    <footer>
+      <small>Lecture seule • Mobile friendly</small>
+    </footer>
+  </div>
+</body>
+</html>

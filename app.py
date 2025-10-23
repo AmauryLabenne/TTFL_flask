@@ -1,41 +1,73 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 import pandas as pd
 import os
+from datetime import datetime, timedelta
+from unidecode import unidecode
+
+# Import de tes fonctions existantes
+from core.get_calendar import fetch_nba_games, create_games_dataframe, process_match_day
+# from core.get_db import process_match_day
+from core.injuries_scrapper import get_nba_injuries_cbs
 
 app = Flask(__name__)
 
-CSV_FILE = "joueurs.csv"
+@app.route("/")
+def home():
+    return '<a href="/tableau">Voir le tableau TTFL</a>'
 
-def load_data():
-    if not os.path.exists(CSV_FILE):
-        return pd.DataFrame()
-    try:
-        return pd.read_csv(CSV_FILE)
-    except Exception:
-        return pd.DataFrame()
+@app.route("/tableau")
+def tableau():
+    # --- 1. Chargement des données sources ---
+    df_upcoming_matches = create_games_dataframe(fetch_nba_games())
+    df_logs_last_year = pd.read_csv("data/player_game_logs_2024-25.csv")
+    df_logs_now = pd.read_csv("data/player_game_logs_2024-25.csv")  # ou autre fichier
 
-@app.route("/", methods=["GET"])
-def index():
-    df = load_data()
+    # --- 2. Date du jour ---
+    sel_date = datetime.today().strftime("%Y-%m-%d")
+    day_to_check = datetime.strptime(sel_date, "%Y-%m-%d")
 
-    # Recherche serveur par nom
-    search = request.args.get("search", "").strip()
-    if search and not df.empty:
-        col_candidates = [c for c in df.columns if c.lower() == "nom" or c.lower() == "name"]
-        if not col_candidates:
-            # fallback: première colonne de type texte
-            for c in df.columns:
-                if df[c].dtype == object:
-                    col_candidates = [c]
-                    break
-        if col_candidates:
-            col = col_candidates[0]
-            df = df[df[col].astype(str).str.contains(search, case=False, na=False)]
+    # --- 3. Calcul du tableau principal ---
+    tab_day = process_match_day(
+        day_to_check,
+        df_logs_last_year,
+        df_logs_now,
+        df_upcoming_matches,
+        save_csv=False
+    )
+    # print(tab_day)
+    tab_day["Player"] = tab_day["Player"].apply(unidecode)
 
-    data = df.to_dict(orient="records")
-    columns = list(df.columns)
+    # --- 4. Gestion des blessures ---
+    df_injuries = get_nba_injuries_cbs()
+    tab_final = pd.merge(
+        tab_day,
+        df_injuries[["Player", "Status"]],
+        how="left",
+        on="Player"
+    )
+    tab_final["Status"] = tab_final["Status"].fillna("OK")
 
-    return render_template("index.html", data=data, columns=columns, search=search)
+    # --- 5. Sélection des colonnes ---
+    columns = [
+        "Player", "Team", "Status",
+        "Score TTFL moyen saison",
+        "Score TTFL 10 derniers jours",
+        "Points moyen",
+        "Assists moyen",
+        "Rebonds moyen"
+    ]
+    # print("AAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    # print(tab_final)
+    columns = tab_final.columns
+    df_display = tab_final[columns]
+    
+    df_display= df_display.sort_values(by="Saison", ascending=False)
+
+    # --- 6. Conversion pour affichage ---
+    data = df_display.to_dict(orient="records")
+
+    return render_template("tableau.html", columns=columns, data=data)
+    
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True)

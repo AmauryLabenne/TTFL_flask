@@ -1,77 +1,138 @@
-:root{
-  --bg: #f7f9fb;
-  --card: #ffffff;
-  --accent: #0d6efd;
-  --muted:#6b7280;
-  --radius: 14px;
+/* ===========================
+   STYLE GLOBAL
+   =========================== */
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #fafafa;
+  color: #222;
 }
 
-*{box-sizing: border-box}
-body{
-  margin:0;
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: var(--bg);
-  color: #0f1724;
-  -webkit-font-smoothing:antialiased;
-  padding: 12px;
+.container {
+  max-width: 100%;
+  padding: 8px;
 }
 
-.app{ max-width:720px; margin:0 auto; }
-
-header{ text-align:center; margin-bottom:8px; }
-h1{ margin:8px 0 0; font-size:1.4rem; }
-.subtitle{ margin:4px 0 8px; color:var(--muted); font-size:0.95rem; }
-
-.card{
-  background: var(--card);
-  border-radius: var(--radius);
-  padding:12px;
-  margin-bottom:12px;
-  box-shadow: 0 6px 18px rgba(13,14,20,0.06);
+/* Titres */
+h1, h2, h3 {
+  text-align: center;
+  font-weight: 600;
+  margin: 8px 0;
 }
 
-.btn{
-  display:inline-block;
-  padding:10px 14px;
-  border-radius: 999px;
-  border: none;
-  font-weight:600;
-  cursor: pointer;
-  margin-left:8px;
-  text-decoration: none;
-  color: white;
-  background: var(--accent);
+h1 {
+  font-size: 1.2rem;
 }
 
-.btn.ghost{ background: transparent; color: var(--accent); border:1px solid rgba(13,110,253,0.12); }
+/* ===========================
+   TABLEAU (DataTables)
+   =========================== */
 
-.btn.primary{ background: var(--accent); color: white; padding:10px 12px; border-radius:12px; }
-
-.btn.round{ border-radius: 999px; padding:8px 12px; font-size:0.95rem; }
-
-.file-label{ display:flex; align-items:center; gap:12px; cursor:pointer; }
-.file-input{ display:none; }
-
-.note{ color:var(--muted); font-size:0.85rem; }
-
-.search-input{
-  width: 100%;
-  padding:12px;
-  border-radius: 12px;
-  border: 1px solid #e6e9ef;
-  font-size:1rem;
+table.dataTable {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border-spacing: 0;
+  font-size: 12px;
+  table-layout: fixed; /* colonnes fixes */
 }
 
-.hint{ color:var(--muted); font-size:0.85rem; margin-top:8px; }
+table.dataTable thead th {
+  background-color: #f4f4f4;
+  color: #333;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px 6px;
+  white-space: normal;      /* permet de passer à la ligne */
+  word-break: break-word;   /* coupe les mots trop longs */
+  line-height: 1.2em;
+}
 
-.table-wrapper{ overflow-x:auto; -webkit-overflow-scrolling: touch; }
+table.dataTable tbody td {
+  text-align: center;
+  padding: 4px 6px;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-table.dataTable thead th{ font-weight:700; font-size:0.95rem; }
-table.dataTable tbody td{ font-size:0.95rem; padding:10px 6px; }
+table.dataTable tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
 
-.caption{ color:var(--muted); font-size:0.85rem; margin-top:8px; text-align:center; }
+/* ===========================
+   VERSION MOBILE COMPACTE
+   =========================== */
+@media (max-width: 768px) {
 
-footer{ text-align:center; color:var(--muted); font-size:0.8rem; margin-top:6px; }
-.flash{ padding:8px 10px; border-radius:10px; margin-top:8px; }
-.flash.success{ background: #e6ffed; color: #0b6b38; }
-.flash.error{ background: #fff3f3; color: #8b1c1c; }
+  table.dataTable {
+    font-size: 9px; /* police très petite pour tout faire rentrer */
+  }
+
+  table.dataTable th,
+  table.dataTable td {
+    padding: 2px 3px !important;
+  }
+
+  .dataTables_wrapper {
+    margin: 0;
+    padding: 0;
+  }
+
+  body, html {
+    overflow-x: hidden; /* pas de scroll horizontal */
+  }
+
+  h1 {
+    font-size: 1rem;
+  }
+}
+
+/* ===========================
+   LARGEURS PAR COLONNE (12 colonnes)
+   =========================== */
+
+table.dataTable th:nth-child(1),
+table.dataTable td:nth-child(1) { width: 12%; }  /* Nom joueur */
+table.dataTable th:nth-child(2),
+table.dataTable td:nth-child(2) { width: 8%; }
+table.dataTable th:nth-child(3),
+table.dataTable td:nth-child(3) { width: 8%; }
+table.dataTable th:nth-child(4),
+table.dataTable td:nth-child(4) { width: 8%; }
+table.dataTable th:nth-child(5),
+table.dataTable td:nth-child(5) { width: 8%; }
+table.dataTable th:nth-child(6),
+table.dataTable td:nth-child(6) { width: 8%; }
+table.dataTable th:nth-child(7),
+table.dataTable td:nth-child(7) { width: 8%; }
+table.dataTable th:nth-child(8),
+table.dataTable td:nth-child(8) { width: 8%; }
+table.dataTable th:nth-child(9),
+table.dataTable td:nth-child(9) { width: 8%; }
+table.dataTable th:nth-child(10),
+table.dataTable td:nth-child(10) { width: 8%; }
+table.dataTable th:nth-child(11),
+table.dataTable td:nth-child(11) { width: 8%; }
+table.dataTable th:nth-child(12),
+table.dataTable td:nth-child(12) { width: 10%; }
+
+/* ===========================
+   DÉTAILS ESTHÉTIQUES
+   =========================== */
+.dataTables_filter input {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+  font-size: 10px;
+}
+
+.dataTables_wrapper .dataTables_info {
+  font-size: 10px;
+}
