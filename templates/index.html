@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stats Joueurs 🏀</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 1em; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+        th a { color: black; text-decoration: none; }
+        tr:hover { background-color: #f5f5f5; }
+        input[type=text] {
+            width: 90%;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 0.5em;
+        }
+        .sort-arrow { font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <h1>🏀 Tableau des Joueurs</h1>
+
+    <!-- Barre de recherche -->
+    <form method="get" action="/">
+        <input type="text" name="search" placeholder="Rechercher un joueur..." value="{{ search }}">
+    </form>
+
+    <!-- Tableau -->
+    <table>
+        <thead>
+            <tr>
+                {% for col in columns %}
+                <th>
+                    <a href="/?search={{ search }}&sort={{ col }}&order={% if sort_col == col and order == 'asc' %}desc{% else %}asc{% endif %}">
+                        {{ col }}
+                        {% if sort_col == col %}
+                            <span class="sort-arrow">{% if order == 'asc' %}▲{% else %}▼{% endif %}</span>
+                        {% endif %}
+                    </a>
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                {% for col in columns %}
+                <td>{{ row[col] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p style="margin-top: 1em; color: gray;">Clique sur un titre pour trier 🔼🔽</p>
+</body>
+</html>
