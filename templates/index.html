@@ -1,60 +1,71 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Stats Joueurs 🏀</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 1em; text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
-        th a { color: black; text-decoration: none; }
-        tr:hover { background-color: #f5f5f5; }
-        input[type=text] {
-            width: 90%;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            margin-top: 0.5em;
-        }
-        .sort-arrow { font-size: 0.8em; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Stats Joueurs — Mobile</title>
+
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>🏀 Tableau des Joueurs</h1>
+  <div class="app">
+    <header>
+      <h1>🏀 Stats Joueurs</h1>
+      <p class="subtitle">Recherche et tri — lecture seule</p>
+    </header>
 
-    <!-- Barre de recherche -->
-    <form method="get" action="/">
-        <input type="text" name="search" placeholder="Rechercher un joueur..." value="{{ search }}">
-    </form>
+    <!-- Recherche -->
+    <section class="card">
+      <form method="get" action="/">
+        <input type="text" name="search" value="{{ search }}" placeholder="🔍 Rechercher un joueur (ex : Alice)" class="search-input">
+        <button class="btn round" type="submit">Filtrer</button>
+        <a class="btn ghost round" href="/">Réinitialiser</a>
+      </form>
+    </section>
 
     <!-- Tableau -->
-    <table>
-        <thead>
+    <section class="card table-card">
+      <div class="table-wrapper">
+        <table id="players" class="display" style="width:100%">
+          <thead>
             <tr>
-                {% for col in columns %}
-                <th>
-                    <a href="/?search={{ search }}&sort={{ col }}&order={% if sort_col == col and order == 'asc' %}desc{% else %}asc{% endif %}">
-                        {{ col }}
-                        {% if sort_col == col %}
-                            <span class="sort-arrow">{% if order == 'asc' %}▲{% else %}▼{% endif %}</span>
-                        {% endif %}
-                    </a>
-                </th>
-                {% endfor %}
+              {% for col in columns %}
+              <th>{{ col }}</th>
+              {% endfor %}
             </tr>
-        </thead>
-        <tbody>
+          </thead>
+          <tbody>
             {% for row in data %}
             <tr>
-                {% for col in columns %}
-                <td>{{ row[col] }}</td>
-                {% endfor %}
+              {% for col in columns %}
+              <td>{{ row[col] }}</td>
+              {% endfor %}
             </tr>
             {% endfor %}
-        </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">Tri et recherche en direct disponibles (barre en haut à droite du tableau).</p>
+    </section>
 
-    <p style="margin-top: 1em; color: gray;">Clique sur un titre pour trier 🔼🔽</p>
+    <footer>
+      <small>Lecture seule • Version mobile</small>
+    </footer>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      $('#players').DataTable({
+        responsive: true,
+        paging: true,
+        info: false,
+        language: { searchPlaceholder: "Recherche..." }
+      });
+    });
+  </script>
 </body>
 </html>

@@ -1,31 +1,41 @@
 from flask import Flask, render_template, request
 import pandas as pd
+import os
 
 app = Flask(__name__)
 
-# Charger les données CSV
-def get_data():
-    return pd.read_csv("joueurs.csv")
+CSV_FILE = "joueurs.csv"
+
+def load_data():
+    if not os.path.exists(CSV_FILE):
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(CSV_FILE)
+    except Exception:
+        return pd.DataFrame()
 
 @app.route("/", methods=["GET"])
 def index():
-    df = get_data()
+    df = load_data()
 
-    # Recherche
-    search = request.args.get("search", "")
-    if search:
-        df = df[df["Nom"].str.contains(search, case=False, na=False)]
+    # Recherche serveur par nom
+    search = request.args.get("search", "").strip()
+    if search and not df.empty:
+        col_candidates = [c for c in df.columns if c.lower() == "nom" or c.lower() == "name"]
+        if not col_candidates:
+            # fallback: première colonne de type texte
+            for c in df.columns:
+                if df[c].dtype == object:
+                    col_candidates = [c]
+                    break
+        if col_candidates:
+            col = col_candidates[0]
+            df = df[df[col].astype(str).str.contains(search, case=False, na=False)]
 
-    # Tri
-    sort_col = request.args.get("sort", "")
-    order = request.args.get("order", "asc")
-    if sort_col in df.columns:
-        df = df.sort_values(by=sort_col, ascending=(order == "asc"))
-
-    # Convertir en liste de dictionnaires pour le template
     data = df.to_dict(orient="records")
+    columns = list(df.columns)
 
-    return render_template("index.html", data=data, columns=df.columns, search=search, sort_col=sort_col, order=order)
+    return render_template("index.html", data=data, columns=columns, search=search)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
