@@ -1,19 +1,76 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+
   <meta charset="UTF-8">
   <title>Tableau TTFL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
+  <!-- DataTables CSS -->
   <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+
+  <!-- Flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- CSS perso -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <!-- jQuery + DataTables JS -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+  <!-- Flatpickr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <style>
+    /* Player en multi-lignes */
+    #ttfl td:nth-child(1) {
+        white-space: normal;
+        word-break: break-word;
+        max-width: 80px;
+    }
+    /* Team */
+    #ttfl td:nth-child(2) { max-width: 40px; }
+    /* Adversaire */
+    #ttfl td:nth-child(3) { max-width: 60px; }
+    /* Position */
+    #ttfl td:nth-child(4) { max-width: 50px; }
+    /* B2B */
+    #ttfl td:nth-child(5) {
+        text-align: center;
+        max-width: 30px;
+        color: green;
+        font-weight: bold;
+    }
+    /* Colonnes numériques 6 à 11 */
+    #ttfl td:nth-child(n+6):nth-child(-n+11) {
+        max-width: 50px;
+        text-align: right;
+    }
+    /* Status */
+    #ttfl td:nth-child(12) {
+        max-width: 40px;
+        text-align: center;
+    }
+  </style>
 </head>
 
 <body>
+    <!-- Petite icône Home -->
+  <a href="{{ url_for('home') }}" class="home-icon">🏠</a>
   <div class="container">
     <h1>📊 Tableau TTFL</h1>
+
+    <!-- Sélecteur de date -->
+    <div class="date-selector" style="text-align:center; margin-bottom:20px;">
+      <form method="get" action="{{ url_for('tableau') }}">
+        <label for="date">Sélectionnez une date :</label>
+        <input type="text" id="date" name="date" value="{{ sel_date }}">
+        <button type="submit">Afficher</button>
+      </form>
+    </div>
+
+    <!-- Tableau -->
     <div class="table-wrapper">
       <table id="ttfl" class="display" style="width:100%">
         <thead>
@@ -27,7 +84,11 @@
           {% for row in data %}
             <tr>
               {% for col in columns %}
-                <td>{{ row[col] }}</td>
+                {% if col == "Player" or col == "B2B" %}
+                  <td>{{ row[col]|safe }}</td>
+                {% else %}
+                  <td>{{ row[col] }}</td>
+                {% endif %}
               {% endfor %}
             </tr>
           {% endfor %}
@@ -36,16 +97,46 @@
     </div>
   </div>
 
+  <!-- Scripts -->
   <script>
+    // DataTables
     $(document).ready(function() {
-      $('#ttfl').DataTable({
+      var table = $('#ttfl').DataTable({
         paging: false,
         searching: true,
         info: false,
-        scrollX: true,      // 👈 permet de scroller horizontalement
+        scrollX: true,
         autoWidth: true,
         order: []
       });
+
+      // Coloration des lignes Status ≠ OK
+      table.rows().every(function() {
+        var rowData = this.data();
+        var status = rowData[11];
+        if (status && status.trim() !== "OK") {
+          $(this.node()).css({
+            "background-color": "#ffcccc",
+            "color": "#800000",
+            "font-weight": "500"
+          });
+        }
+      });
+    });
+
+    // Flatpickr
+    document.addEventListener("DOMContentLoaded", function() {
+      flatpickr("#date", {
+        dateFormat: "Y-m-d",
+        allowInput: true
+      });
+
+    // 🔹 Auto-submit du formulaire si aucun paramètre date
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('date')) {
+      $('form').submit();
+    }
+
     });
   </script>
 </body>

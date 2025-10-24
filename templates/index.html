@@ -1,77 +1,21 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Stats Joueurs — Mobile</title>
-
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
+  <meta charset="UTF-8">
+  <title>Accueil TTFL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>🏀 Stats Joueurs</h1>
-      <p class="subtitle">Lecture seule • Recherche et tri • Mobile friendly</p>
-
-      <nav class="menu">
-        <a href="{{ url_for('index') }}" class="btn ghost round">Tableau</a>
-        <a href="{{ url_for('fantasy') }}" class="btn ghost round">Fantasy</a>
-        <a href="{{ url_for('fantasy_historique') }}" class="btn ghost round">Historique</a>
-      </nav>
-    </header>
-
-    <!-- Recherche -->
-    <section class="card">
-      <form method="get" action="/">
-        <input type="text" name="search" value="{{ search }}" placeholder="🔍 Rechercher un joueur" class="search-input">
-        <button class="btn round" type="submit">Filtrer</button>
-        <a href="{{ url_for('index') }}" class="btn ghost round">Réinitialiser</a>
-      </form>
-    </section>
-
-    <!-- Tableau -->
-    <section class="card table-card">
-      <div class="table-wrapper">
-        <table id="players" class="display" style="width:100%">
-          <thead>
-            <tr>
-              {% for col in columns %}
-              <th>{{ col }}</th>
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody>
-            {% for row in data %}
-            <tr>
-              {% for col in columns %}
-              <td>{{ row[col] }}</td>
-              {% endfor %}
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      <p class="caption">Tri et recherche disponibles (DataTables, barre en haut à droite)</p>
-    </section>
-
-    <footer>
-      <small>Lecture seule • Mobile friendly</small>
-    </footer>
+  <div class="container">
+    <h1>👋 Bienvenue sur le TTFL de la BAK</h1>
+    <div class="button-wrapper">
+      <a href="{{ url_for('tableau') }}" class="big-btn">📊 Tableau TTFL</a>
+      <a href="https://fantasy.trashtalk.co" target="_blank" class="big-btn">🌐 Fantasy Trashtalk</a>
+      <a href="https://www.cbssports.com/nba/injuries/" class="big-btn" target="_blank">💉 Injuries</a>
+      <a href="https://x.com/TTFLab" class="big-btn" target="_blank">Le Lab on Twitter</a>
+      
+    </div>
   </div>
-
-  <script>
-    $(document).ready(function() {
-      $('#players').DataTable({
-        responsive: true,
-        paging: true,
-        info: false,
-        language: { searchPlaceholder: "Recherche..." }
-      });
-    });
-  </script>
 </body>
 </html>
