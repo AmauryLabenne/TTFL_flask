@@ -4,9 +4,18 @@ import pandas as pd
 from datetime import datetime, timedelta
 from pytz import UTC
 from core.get_db import *
+import os
 
 # Connexion to NBA API (RapidAPI)
 def fetch_nba_games():
+    cache_file = "data/calendar.json"
+
+    if os.path.exists(cache_file):
+        print("Chargement depuis le cache JSON...")
+        with open(cache_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    print("Chargement depuis l'API NBA...")
     conn = http.client.HTTPSConnection("api-nba-v1.p.rapidapi.com")
     headers = {
         'x-rapidapi-key': "79b88cc3c5msh1d30692405caa0cp191069jsn86b832042652",
@@ -16,7 +25,15 @@ def fetch_nba_games():
     res = conn.getresponse()
     data = res.read()
     conn.close()
-    return json.loads(data.decode("utf-8"))['response']
+
+    json_data = json.loads(data.decode("utf-8"))['response']
+
+    os.makedirs("data", exist_ok=True)
+    with open(cache_file, "w", encoding="utf-8") as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=2)
+
+    print("Données sauvegardées dans le cache JSON.")
+    return json_data
 
 # Retrieving matches and creating the DataFrame
 def create_games_dataframe(games):
