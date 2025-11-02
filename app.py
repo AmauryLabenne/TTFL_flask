@@ -168,7 +168,7 @@ def joueur(player_name):
     
     # Colonnes à afficher
     out_cols = ['PLAYER_NAME', 'GAME_DATE', 'MATCHUP', "score_ttfl", 'WL', 'MIN']
-    df_out = player_info[out_cols].sort_values(by="GAME_DATE")
+    df_out = player_info[out_cols].sort_values(by="GAME_DATE", ascending=False)
     df_out['GAME_DATE'] = pd.to_datetime(df_out['GAME_DATE']).dt.strftime("%Y-%m-%d")
 
 
