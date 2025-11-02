@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Recherche Joueurs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+  <!-- Icône retour Home -->
+  <a href="{{ url_for('home') }}" class="home-icon">🏠</a>
+
+  <div class="container">
+    <h1>🧍 Recherche de joueur</h1>
+
+    <!-- Champ de recherche -->
+    <form id="player-form" method="POST" action="{{ url_for('joueurs') }}" style="text-align:center;">
+      <input type="text" name="player_name" id="player_name"
+             placeholder="Tape un nom de joueur..."
+             list="player_suggestions"
+             autocomplete="off"
+             required>
+      <datalist id="player_suggestions"></datalist>
+      <button type="submit" style="display:none;">Rechercher</button>
+    </form>
+
+    {% if player_data is none %}
+      <p style="text-align:center; color:#666;">🔎 Tapez un nom de joueur pour afficher ses statistiques.</p>
+    {% else %}
+      {% if player_data.empty %}
+        <p style="text-align:center; color:#b00;">❌ Aucun joueur trouvé pour "<strong>{{ player_name }}</strong>".</p>
+      {% else %}
+        <div class="table-wrapper">
+          <table id="player_table" class="display" style="width:100%">
+            <thead>
+              <tr>
+                {% for col in player_data.columns %}
+                  <th>{{ col }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for _, row in player_data.iterrows() %}
+                <tr>
+                  {% for col in player_data.columns %}
+                    <td>{{ row[col] }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <script>
+    // 🔥 Auto-complétion dynamique
+    $(document).ready(function() {
+      const $input = $('#player_name');
+      const $form = $('#player-form');
+
+      $input.on('input', function() {
+        let query = $(this).val();
+        if (query.length < 2) return;
+
+        $.getJSON('/api/suggest_players', { q: query }, function(data) {
+          let options = '';
+          data.forEach(name => options += `<option value="${name}">`);
+          $('#player_suggestions').html(options);
+        });
+      });
+
+      // ✅ Auto-envoi du formulaire quand un joueur est choisi ou Enter pressé
+      $input.on('change keypress', function(e) {
+        if (e.type === 'change' || e.key === 'Enter') {
+          e.preventDefault();
+          if ($input.val().trim().length > 0) {
+            $form.submit();
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -10,9 +10,11 @@
   <div class="container">
     <h1>👋 Bienvenue sur le TTFL de la BAK</h1>
     <div class="button-wrapper">
-      <a href="{{ url_for('tableau') }}" class="big-btn">📊 Tableau TTFL</a>
-      <a href="https://fantasy.trashtalk.co" target="_blank" class="big-btn">🌐 Fantasy Trashtalk</a>
+      <a href="{{ url_for('tableau', date=datetime.utcnow().strftime('%Y-%m-%d')) }}" class="big-btn">📊 Tableau TTFL</a>
+      <a href="{{ url_for('joueurs') }}" class="big-btn">🔍 Rechercher un joueur</a>
+      <a href="https://fantasy.trashtalk.co" target="_blank" class="big-btn">🥕 Fantasy Trashtalk</a>
       <a href="https://www.cbssports.com/nba/injuries/" class="big-btn" target="_blank">💉 Injuries</a>
+      <a href="https://www.nba.com/games" class="big-btn" target="_blank"> 🏀 Box scores NBA </a>
       <a href="https://x.com/TTFLab" class="big-btn" target="_blank">Le Lab on Twitter</a>
       
     </div>

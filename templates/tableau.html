@@ -38,25 +38,26 @@
     /* B2B */
     #ttfl td:nth-child(5) {
         text-align: center;
-        max-width: 30px;
+        max-width: 20px;
         color: green;
         font-weight: bold;
     }
     /* Colonnes numériques 6 à 11 */
     #ttfl td:nth-child(n+6):nth-child(-n+11) {
-        max-width: 50px;
+        max-width: 30px;
         text-align: right;
     }
     /* Status */
     #ttfl td:nth-child(12) {
         max-width: 40px;
+        word-break: break-word;
         text-align: center;
     }
   </style>
 </head>
 
 <body>
-    <!-- Petite icône Home -->
+  <!-- Petite icône Home -->
   <a href="{{ url_for('home') }}" class="home-icon">🏠</a>
   <div class="container">
     <h1>📊 Tableau TTFL</h1>
@@ -84,7 +85,13 @@
           {% for row in data %}
             <tr>
               {% for col in columns %}
-                {% if col == "Player" or col == "B2B" %}
+                {% if col == "Player" %}
+                  <td>
+                    <a href="{{ url_for('joueur', player_name=row[col]|replace('<br>', ' ')) }}">
+                      {{ row[col]|safe }}
+                    </a>
+                  </td>
+                {% elif col == "B2B" %}
                   <td>{{ row[col]|safe }}</td>
                 {% else %}
                   <td>{{ row[col] }}</td>
@@ -131,12 +138,11 @@
         allowInput: true
       });
 
-    // 🔹 Auto-submit du formulaire si aucun paramètre date
-    const urlParams = new URLSearchParams(window.location.search);
-    if (!urlParams.has('date')) {
-      $('form').submit();
-    }
-
+      // Auto-submit si date vide
+      const urlParams = new URLSearchParams(window.location.search);
+      if (!urlParams.has('date')) {
+        $('form').submit();
+      }
     });
   </script>
 </body>

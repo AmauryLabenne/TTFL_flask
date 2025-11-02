@@ -3,6 +3,7 @@ import time
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import commonteamroster
 from nba_api.stats.endpoints import PlayerGameLogs
+from unidecode import unidecode
 
 # Récupérer les équipes NBA
 def fetch_nba_teams():
@@ -53,7 +54,7 @@ def process_nba_players():
 
 ##############################################################
 # Fonction pour récupérer les données des matchs des joueurs
-def fetch_player_game_logs(season='2024-25', season_type='Regular Season'):
+def fetch_player_game_logs(season='2025-26', season_type='Regular Season'):
     player_game_logs = PlayerGameLogs(season_nullable=season, season_type_nullable=season_type,league_id_nullable='00')
     return player_game_logs.get_data_frames()[0]
 
@@ -159,7 +160,7 @@ def save_to_csv(df, filename):
     df.to_csv(filename, index=False)
 
 # Pipeline complet
-def process_player_logs(season='2024-25', season_type='Regular Season', save_csv=False):
+def process_player_logs(season='2025-26', season_type='Regular Season', save_csv=False):
     print("Fetch player game logs")
     df = fetch_player_game_logs(season=season, season_type=season_type)
 
@@ -191,6 +192,9 @@ def process_player_logs(season='2024-25', season_type='Regular Season', save_csv
     last_3_vs_opponent, impact_by_position, home_away_avg, back_to_back_avg = calculate_grouped_averages(df)
     final_df = merge_data(df, last_3_vs_opponent, impact_by_position, home_away_avg, back_to_back_avg)
 
+    final_df["PLAYER_NAME"] = final_df["PLAYER_NAME"].apply(unidecode)
+    final_df['MIN'] = final_df['MIN'].round(0).astype(int)
+
     if (save_csv):
         file_name = f"../data/player_game_logs_{season}.csv"
         save_to_csv(final_df, file_name)
@@ -201,4 +205,4 @@ if __name__ == "__main__":
 
     process_nba_players()
 
-    process_player_logs(season="2024-25",save_csv=True)
+    process_player_logs(season="2025-26",save_csv=True)

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Stats {{ player_name }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <a href="{{ request.referrer or url_for('tableau') }}">← Précédent</a>
+    <h1>Stats de {{ player_name }}</h1>
+
+    {% if player_data %}
+  <table>
+    <thead>
+      <tr>
+        {% for col in player_data[0].keys() %}
+          <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in player_data %}
+        <tr>
+          {% for col in row.keys() %}
+            <td>{{ row[col] }}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+    {% else %}
+        <p>Aucune donnée pour le joueur "{{ player_name }}".</p>
+    {% endif %}
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#player-table').DataTable({
+        paging: false,
+        searching: true,
+        info: false,
+        scrollX: true
+      });
+    });
+  </script>
+</body>
+</html>

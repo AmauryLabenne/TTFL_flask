@@ -48,6 +48,11 @@ team_mapping = {
 # Function for processing the day's matches
 def process_match_day(day_to_check, df_logs_last_year, df_logs_now, df_upcoming_matches, save_csv=False):
 
+    if df_logs_last_year.empty:
+        # Créer un DataFrame vide avec les colonnes nécessaires
+        df_logs_last_year = pd.DataFrame(columns=['TEAM_NAME', 'PLAYER_NAME', 'score_ttfl', 'GAME_DATE'])
+
+
     day_before = day_to_check - timedelta(days=1)
     # Filter day's and yesterday's matches
     df_today_matches = df_upcoming_matches[df_upcoming_matches['date'].dt.normalize() == day_to_check]
