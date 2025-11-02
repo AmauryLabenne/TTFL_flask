@@ -3,8 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <title>Stats {{ player_name }}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+
+  <!-- CSS perso -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 5px 8px;
+      text-align: center;
+      max-width: 100px;
+      word-break: break-word;
+    }
+    table th {
+      background-color: #f2f2f2;
+    }
+    /* Colonnes numériques alignées à droite */
+    table td:nth-child(n+4) {
+      text-align: right;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -12,38 +38,43 @@
     <h1>Stats de {{ player_name }}</h1>
 
     {% if player_data %}
-  <table>
-    <thead>
-      <tr>
-        {% for col in player_data[0].keys() %}
-          <th>{{ col }}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in player_data %}
-        <tr>
-          {% for col in row.keys() %}
-            <td>{{ row[col] }}</td>
+    <div class="table-wrapper">
+      <table id="player-table" class="display">
+        <thead>
+          <tr>
+            {% for col in player_data[0].keys() %}
+              <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in player_data %}
+            <tr>
+              {% for col in row.keys() %}
+                <td>{{ row[col] }}</td>
+              {% endfor %}
+            </tr>
           {% endfor %}
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        </tbody>
+      </table>
+    </div>
     {% else %}
-        <p>Aucune donnée pour le joueur "{{ player_name }}".</p>
+      <p>Aucune donnée pour le joueur "{{ player_name }}".</p>
     {% endif %}
   </div>
 
+  <!-- jQuery + DataTables JS -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
   <script>
     $(document).ready(function() {
       $('#player-table').DataTable({
         paging: false,
-        searching: true,
+        searching: false,  // ← Champ de recherche désactivé
         info: false,
-        scrollX: true
+        scrollX: true,
+        autoWidth: true,
+        order: []
       });
     });
   </script>
