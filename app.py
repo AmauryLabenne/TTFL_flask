@@ -7,7 +7,7 @@ from unidecode import unidecode
 
 # Import de tes fonctions existantes
 from core.get_calendar import fetch_nba_games, create_games_dataframe, process_match_day, get_detailed_stats_player
-from core.get_db import process_player_logs
+from core.get_db import process_player_logs, get_box_scores
 from core.injuries_scrapper import get_nba_injuries_cbs
 
 app = Flask(__name__)
@@ -18,7 +18,6 @@ def home():
 
 @app.route("/tableau")
 def tableau():
-    print(">>> PARAMETRE RECU :", request.args)
     # --- 1. Chargement des données sources ---
     df_upcoming_matches = create_games_dataframe(fetch_nba_games())
     # df_logs_last_year = pd.read_csv("data/player_game_logs_2024-25.csv")
@@ -29,7 +28,6 @@ def tableau():
     # --- 2. Récupération de la date depuis le paramètre GET ---
     # --- 2. Récupération de la date depuis le formulaire ---
     sel_date = request.args.get("date")
-    print(sel_date)
 
     if sel_date:
         try:
@@ -50,7 +48,6 @@ def tableau():
         df_upcoming_matches,
         save_csv=False
     )
-    # print(tab_day)
 
 
     # --- 4. Gestion des blessures ---
@@ -72,8 +69,6 @@ def tableau():
         "Assists moyen",
         "Rebonds moyen"
     ]
-    print("AAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    print(tab_final)
     columns = tab_final.columns
     df_display = tab_final[columns]
 
@@ -94,8 +89,6 @@ def tableau():
 
     # Deal with nan and round on numeric
     num_cols = df_display.select_dtypes(include='number').columns
-    print(num_cols)
-    print(df_display.head())
     df_display[num_cols] = df_display[num_cols].fillna(0)
     df_display[num_cols] = df_display[num_cols].round(0).astype(int)
 
@@ -121,20 +114,15 @@ def joueurs():
     df_out = None
     if request.method == "POST":
         player_name = request.form.get("player_name", "").strip()
-        print(player_name)
-        
+
         if player_name != "":
             # Filtrer les joueurs correspondants (insensible à la casse)
-            # Filtrer les joueurs correspondants (insensible à la casse)
-            print("AAAAAAAAAAAAAAAA")
-            print(df_logs_now['PLAYER_NAME'].str.contains(player_name, case=False))
             player_info = df_logs_now[df_logs_now['PLAYER_NAME'].str.contains(player_name, case=False)]
-            print(player_info.head())
-            print(player_info.columns)
+
             if not player_info.empty:
                out_cols = ['PLAYER_NAME', 'GAME_DATE', 'MATCHUP', "score_ttfl", 'WL', 'MIN']
                df_out = player_info[out_cols]
-               df_out = df_out.sort_values(by="GAME_DATE")
+               df_out = df_out.sort_values(by="GAME_DATE", ascending=False)
                # stats_df = get_detailed_stats_player(player_info)
                 
     return render_template("joueurs.html", player_data=df_out, player_name=player_name)
@@ -145,18 +133,16 @@ def suggest_players():
     if not query:
         return jsonify([])
 
-    df_logs_now = pd.read_csv("data/player_game_logs_2024-25.csv")
-    players = df_logs_now["PLAYER_NAME"].dropna().unique()
-
+    df_logs_now = pd.read_csv("data/nba_players_by_team.csv")
+    players = df_logs_now["Player"].dropna().apply(unidecode).unique()
     matches = [p for p in players if query in p.lower()][:10]  # max 10 résultats
+
     return jsonify(matches)
 
 @app.route("/joueur/<player_name>")
 def joueur(player_name):
     player_name = player_name.strip()
-    print("BBBBBBBBBBBBBBBB")
-    print(player_name)
-    
+
     # Charger les données comme dans /joueurs
     df_logs_now = process_player_logs(season="2025-26")
     
@@ -175,6 +161,26 @@ def joueur(player_name):
     data = df_out.to_dict(orient="records")
     
     return render_template("joueur.html", player_name=player_name, player_data=data)
+
+@app.route("/boxscore")
+def boxscore():
+
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    dfs = get_box_scores(yesterday)
+
+    # Convertir pour le template
+    dataframes = []
+    for title, df in dfs:
+        df_display = df.copy()
+        # df_display = df_display.round(1)
+        dataframes.append({
+            "title": title,
+            "columns": df_display.columns,
+            "rows": df_display.to_dict(orient="records")
+        })
+
+    return render_template("boxscore.html", dataframes=dataframes)
+
        
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
 import pandas as pd
 import time
+import re
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import commonteamroster
 from nba_api.stats.endpoints import PlayerGameLogs
+from nba_api.stats.endpoints import scoreboardv2, boxscoretraditionalv3
 from unidecode import unidecode
 
 # Récupérer les équipes NBA
@@ -48,7 +50,6 @@ def save_players_data(df, filename):
 # Pipeline complet
 def process_nba_players():
     df_players = fetch_all_players_data()
-    print(df_players.head(10))
     save_players_data(df_players, '../data/nba_players_by_team.csv')
 
 
@@ -160,45 +161,104 @@ def save_to_csv(df, filename):
     df.to_csv(filename, index=False)
 
 # Pipeline complet
+import os
+import pandas as pd
+from datetime import datetime
+from unidecode import unidecode
+
 def process_player_logs(season='2025-26', season_type='Regular Season', save_csv=False):
-    print("Fetch player game logs")
+    """
+    Traite les logs joueurs avec cache journalier :
+    - Si un fichier cache existe pour la date du jour, le charge
+    - Sinon, fait les appels API et sauvegarde le cache
+    """
+    today_str = datetime.today().strftime("%Y-%m-%d")
+    cache_path = f"data/player_game_logs_{season.replace(' ', '_')}_{today_str}.csv"
+
+    # --- 1️⃣ Vérifie si le cache existe pour aujourd'hui ---
+    if os.path.exists(cache_path):
+        print(f"✅ Chargement depuis le cache du jour : {cache_path}")
+        return pd.read_csv(cache_path)
+
+    # --- 2️⃣ Sinon : appel API + traitement complet ---
+    print("🔄 Fetch player game logs depuis API…")
     df = fetch_player_game_logs(season=season, season_type=season_type)
 
     nba_teams = [
-        'ATL', 'BOS', 'BKN', 'CHA', 'CHI', 'CLE', 'DAL', 'DEN', 'DET', 
-        'GSW', 'HOU', 'IND', 'LAL', 'LAC', 'MEM', 'MIA', 'MIL', 'MIN', 
-        'NOP', 'NYK', 'OKC', 'ORL', 'PHI', 'PHX', 'POR', 'SAC', 'SAS', 
+        'ATL', 'BOS', 'BKN', 'CHA', 'CHI', 'CLE', 'DAL', 'DEN', 'DET',
+        'GSW', 'HOU', 'IND', 'LAL', 'LAC', 'MEM', 'MIA', 'MIL', 'MIN',
+        'NOP', 'NYK', 'OKC', 'ORL', 'PHI', 'PHX', 'POR', 'SAC', 'SAS',
         'TOR', 'UTA', 'WAS'
     ]
     df = df[df['TEAM_ABBREVIATION'].isin(nba_teams)]
-    
 
-    print("Add player info")
+    print("🧩 Ajout des infos joueurs")
     players_info = pd.read_csv("./data/nba_players_by_team.csv")
     df = add_players_info(df, players_info)
 
-    print("Calculate TTFL score")
+    print("🏀 Calcul du score TTFL")
     df = calculate_ttfl_score(df)
 
-    print("Enrich game logs (opponent, Date, B2B,...")
+    print("📅 Enrichissement des logs (opposant, date, B2B, …)")
     df = enrich_game_logs(df)
 
-    print("Calculate moving average")
+    print("📈 Calcul des moyennes mobiles")
     df = calculate_moving_averages(df)
 
-    #save_to_csv(df, 'data/player_game_logs_2022_23_pred_temp.csv')
-
-    print("Computed average by group (opponent, position, home_away, B2B")
+    print("🔢 Calcul des statistiques groupées")
     last_3_vs_opponent, impact_by_position, home_away_avg, back_to_back_avg = calculate_grouped_averages(df)
     final_df = merge_data(df, last_3_vs_opponent, impact_by_position, home_away_avg, back_to_back_avg)
 
     final_df["PLAYER_NAME"] = final_df["PLAYER_NAME"].apply(unidecode)
     final_df['MIN'] = final_df['MIN'].round(0).astype(int)
 
-    if (save_csv):
+    # --- 3️⃣ Sauvegarde du cache du jour ---
+    os.makedirs("data", exist_ok=True)
+    final_df.to_csv(cache_path, index=False)
+    print(f"💾 Cache du jour sauvegardé : {cache_path}")
+
+    # --- 4️⃣ Optionnel : sauvegarde supplémentaire si demandé ---
+    if save_csv:
         file_name = f"../data/player_game_logs_{season}.csv"
-        save_to_csv(final_df, file_name)
-    return(final_df)
+        final_df.to_csv(file_name, index=False)
+        print(f"✅ Sauvegardé aussi dans {file_name}")
+
+    return final_df
+
+
+def get_box_scores(game_date):
+    
+    scoreboard = scoreboardv2.ScoreboardV2(game_date=game_date)
+    games = scoreboard.get_normalized_dict()["GameHeader"]
+
+    dfs = []
+    for game in games:
+        game_id = game["GAME_ID"]
+        game_name = re.sub(r'^\d+\/([A-Z]{3})([A-Z]{3})$', r'\1 @ \2', game['GAMECODE'])
+
+        boxscore = boxscoretraditionalv3.BoxScoreTraditionalV3(game_id=game_id)
+        player_stats = boxscore.player_stats.get_data_frame()
+
+        df = player_stats[['teamTricode', 'nameI', 'minutes', 'points',
+                        'fieldGoalsMade', 'fieldGoalsAttempted',
+                        'threePointersMade', 'threePointersAttempted',
+                        'freeThrowsMade', 'freeThrowsAttempted', 
+                        'reboundsTotal', 'assists', 'steals', 'blocks', 'turnovers']]
+        df.columns = ['Team', 'Name', 'MIN', 'PTS',
+                        'FGM', 'FGA',
+                        'FG3M', 'FG3A',
+                        'FTM', 'FTA', 
+                        'REB', 'AST', 'STL', 'BLK', 'TOV']
+        df = calculate_ttfl_score(df)
+        df = df[['Team', 'Name', 'score_ttfl', 'PTS', 'REB', 'AST', 'BLK' ,'TOV', 'MIN']]
+        
+        # Final cleaning
+        df = df[~df["MIN"].isna() & (df["MIN"] != "")]
+        df = df.sort_values(by=["Team", "score_ttfl"], ascending=[True, False])  # tri
+        df = df.rename(columns={"score_ttfl": "TTFL"})
+        dfs.append((game_name, df))
+    
+    return(dfs)
 
 # Exécuter le pipeline
 if __name__ == "__main__":

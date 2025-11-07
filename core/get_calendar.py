@@ -150,7 +150,6 @@ def process_match_day(day_to_check, df_logs_last_year, df_logs_now, df_upcoming_
     df_today_summary = df_today_players[['PLAYER_NAME', 'TEAM_NAME', 'opponent', 'Location', 'Position', 'is_backtoback',
                                      'mean_score_ttfl', 'mean_30_days', 'score_ttfl_vs_opponent', 'games_played_against_opponent',
                                      'impact_location']].drop_duplicates()
-    # print(df_today_summary)
 
     # Merge with the table of pos vs opp 
     df_today_summary = pd.merge(df_today_summary,df_pos_vs_opp[['Position','Opponent','impact_position_vs_opponent']],left_on=['Position', 'opponent'],right_on=['Position', 'Opponent'],how='left')

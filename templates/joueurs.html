@@ -5,7 +5,11 @@
   <title>Recherche Joueurs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <!-- jQuery + DataTables -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+  <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
 </head>
 
 <body>
@@ -16,43 +20,44 @@
     <h1>🧍 Recherche de joueur</h1>
 
     <!-- Champ de recherche -->
-    <form id="player-form" method="POST" action="{{ url_for('joueurs') }}" style="text-align:center;">
+    <form id="player-form" method="POST" action="{{ url_for('joueurs') }}" style="text-align:center; margin-bottom: 20px;">
       <input type="text" name="player_name" id="player_name"
              placeholder="Tape un nom de joueur..."
              list="player_suggestions"
              autocomplete="off"
-             required>
+             required
+             style="padding: 8px; width: 60%; border-radius: 8px; border: 1px solid #ccc;">
       <datalist id="player_suggestions"></datalist>
       <button type="submit" style="display:none;">Rechercher</button>
     </form>
 
     {% if player_data is none %}
       <p style="text-align:center; color:#666;">🔎 Tapez un nom de joueur pour afficher ses statistiques.</p>
+
+    {% elif player_data.empty %}
+      <p style="text-align:center; color:#b00;">❌ Aucun joueur trouvé pour "<strong>{{ player_name }}</strong>".</p>
+
     {% else %}
-      {% if player_data.empty %}
-        <p style="text-align:center; color:#b00;">❌ Aucun joueur trouvé pour "<strong>{{ player_name }}</strong>".</p>
-      {% else %}
-        <div class="table-wrapper">
-          <table id="player_table" class="display" style="width:100%">
-            <thead>
+      <div class="table-wrapper">
+        <table id="player-table" class="display" style="width:100%">
+          <thead>
+            <tr>
+              {% for col in player_data.columns %}
+                <th>{{ col }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for _, row in player_data.iterrows() %}
               <tr>
                 {% for col in player_data.columns %}
-                  <th>{{ col }}</th>
+                  <td>{{ row[col] }}</td>
                 {% endfor %}
               </tr>
-            </thead>
-            <tbody>
-              {% for _, row in player_data.iterrows() %}
-                <tr>
-                  {% for col in player_data.columns %}
-                    <td>{{ row[col] }}</td>
-                  {% endfor %}
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     {% endif %}
   </div>
 
@@ -81,6 +86,15 @@
             $form.submit();
           }
         }
+      });
+
+      // ✅ DataTable sans champ de recherche
+      $('#player-table').DataTable({
+        paging: false,
+        searching: false,
+        info: false,
+        scrollX: true,
+        order: []
       });
     });
   </script>

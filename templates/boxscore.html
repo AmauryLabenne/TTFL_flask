@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Boxscores NBA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css">
+</head>
+
+<body>
+  <div class="container">
+    <a href="{{ url_for('home') }}">← Accueil</a>
+    <h1>📊 Boxscores NBA</h1>
+
+    {% for df in dataframes %}
+      <div class="boxscore-block" style="margin-bottom: 40px;">
+        <h2>{{ df.title }}</h2>
+        <table class="display player-table" style="width:100%">
+          <thead>
+            <tr>
+              {% for col in df.columns %}
+                <th>{{ col }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in df.rows %}
+              <tr>
+                {% for col in df.columns %}
+                  <td>{{ row[col] }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+  <script>
+    $(document).ready(function() {
+      // Initialise DataTables pour tous les tableaux, sans recherche ni pagination
+      $('.player-table').each(function() {
+        $(this).DataTable({
+          paging: false,
+          searching: false,
+          info: false,
+          scrollX: true,
+          order: []
+        });
+      });
+    });
+  </script>
+</body>
+</html>
