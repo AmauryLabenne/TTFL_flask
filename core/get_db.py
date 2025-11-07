@@ -166,21 +166,42 @@ import pandas as pd
 from datetime import datetime
 from unidecode import unidecode
 
+import os
+import pandas as pd
+from datetime import datetime
+from unidecode import unidecode
+
+# --- Cache global en RAM ---
+_RAM_CACHE = {
+    "date": None,
+    "season": None,
+    "df": None
+}
+
 def process_player_logs(season='2025-26', season_type='Regular Season', save_csv=False):
     """
-    Traite les logs joueurs avec cache journalier :
-    - Si un fichier cache existe pour la date du jour, le charge
-    - Sinon, fait les appels API et sauvegarde le cache
+    Traite les logs joueurs avec cache RAM + cache disque journalier.
+    - Si RAM contient déjà les données du jour, renvoie directement le DataFrame.
+    - Sinon, vérifie le cache disque pour la date du jour.
+    - Sinon, appelle l'API et calcule tout.
     """
+    global _RAM_CACHE
     today_str = datetime.today().strftime("%Y-%m-%d")
     cache_path = f"data/player_game_logs_{season.replace(' ', '_')}_{today_str}.csv"
 
-    # --- 1️⃣ Vérifie si le cache existe pour aujourd'hui ---
-    if os.path.exists(cache_path):
-        print(f"✅ Chargement depuis le cache du jour : {cache_path}")
-        return pd.read_csv(cache_path)
+    # --- 1️⃣ Vérifie RAM ---
+    if _RAM_CACHE["date"] == today_str and _RAM_CACHE["season"] == season:
+        print(f"✅ Chargement depuis le cache RAM pour {season} ({today_str})")
+        return _RAM_CACHE["df"]
 
-    # --- 2️⃣ Sinon : appel API + traitement complet ---
+    # --- 2️⃣ Vérifie cache disque ---
+    if os.path.exists(cache_path):
+        print(f"✅ Chargement depuis le cache disque : {cache_path}")
+        df = pd.read_csv(cache_path)
+        _RAM_CACHE.update({"date": today_str, "season": season, "df": df})
+        return df
+
+    # --- 3️⃣ Sinon : appel API + traitement complet ---
     print("🔄 Fetch player game logs depuis API…")
     df = fetch_player_game_logs(season=season, season_type=season_type)
 
@@ -212,18 +233,22 @@ def process_player_logs(season='2025-26', season_type='Regular Season', save_csv
     final_df["PLAYER_NAME"] = final_df["PLAYER_NAME"].apply(unidecode)
     final_df['MIN'] = final_df['MIN'].round(0).astype(int)
 
-    # --- 3️⃣ Sauvegarde du cache du jour ---
+    # --- 4️⃣ Sauvegarde cache disque ---
     os.makedirs("data", exist_ok=True)
     final_df.to_csv(cache_path, index=False)
-    print(f"💾 Cache du jour sauvegardé : {cache_path}")
+    print(f"💾 Cache disque sauvegardé : {cache_path}")
 
-    # --- 4️⃣ Optionnel : sauvegarde supplémentaire si demandé ---
+    # --- 5️⃣ Mettre dans RAM ---
+    _RAM_CACHE.update({"date": today_str, "season": season, "df": final_df})
+
+    # --- 6️⃣ Sauvegarde optionnelle globale ---
     if save_csv:
         file_name = f"../data/player_game_logs_{season}.csv"
         final_df.to_csv(file_name, index=False)
         print(f"✅ Sauvegardé aussi dans {file_name}")
 
     return final_df
+
 
 
 def get_box_scores(game_date):
