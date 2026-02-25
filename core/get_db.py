@@ -31,7 +31,8 @@ def fetch_all_players_data():
     all_players_data = []
 
     for team in nba_teams:
-        #time.sleep(1)
+        time.sleep(1)
+        print(team)
         team_id = team['id']
         team_name = team['full_name']
         players = fetch_team_roster(team_id)
@@ -50,7 +51,7 @@ def save_players_data(df, filename):
 # Pipeline complet
 def process_nba_players():
     df_players = fetch_all_players_data()
-    save_players_data(df_players, '../data/nba_players_by_team.csv')
+    save_players_data(df_players, 'data/nba_players_by_team.csv')
 
 
 ##############################################################
@@ -288,6 +289,9 @@ def get_box_scores(game_date):
 # Exécuter le pipeline
 if __name__ == "__main__":
 
+    print("Start fetching players")
     process_nba_players()
+    print("End fetching players")
 
-    process_player_logs(season="2025-26",save_csv=True)
+
+    # process_player_logs(season="2025-26",save_csv=True)
